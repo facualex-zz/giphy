@@ -2,6 +2,7 @@
 
 - [ ] Add lazy loading
 - [ ] Add Regex for the search input
+- [ ] Implement algorithm for filling blank spaces in grid
 
 ## FIXME:
 
