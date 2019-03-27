@@ -16,13 +16,36 @@ form.addEventListener('submit', e => onFormSubmit(e));
 resultSection.addEventListener('click', onGifClickHandle);
 overlay.addEventListener('click', close);
 
+const lazyLoad = target => {
+  const io = new IntersectionObserver((entries, observer) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const img = entry.target;
+        const src = img.getAttribute('data-src');
+
+        img.setAttribute('src', src);
+        img.classList.remove('lazy');
+
+        observer.disconnect();
+      }
+    });
+  });
+
+  io.observe(target);
+};
+
 // Functions
 const onFormSubmit = e => {
   e.preventDefault();
   if (searchInput.value && searchInput.value.trim()) {
     const searchString = searchInput.value.replace(/ /g, '+');
     makeRequest(searchString)
-      .then(res => generateAndShowResults(res.data.data, digits))
+      .then(res => {
+        generateAndShowResults(res.data.data, digits);
+        // Add intersection observer to all images loaded
+        const lazyImages = document.querySelectorAll('img.lazy');
+        lazyImages.forEach(lazyLoad);
+      })
       .catch(err => console.log(err));
   }
 };
@@ -34,7 +57,7 @@ const generateAndShowResults = (apiResponse, digits) => {
     const [h, v] = digits[index];
     element += `
     <div class="gif-box h${h} v${v}">
-      <img src="${gif.images.downsized.url}"></img>
+      <img class="lazy" data-src="${gif.images.downsized.url}"></img>
       <div class="gif-box-overlay">
         <button id="view-gif-btn">View &rarr;</button>
       </div>
